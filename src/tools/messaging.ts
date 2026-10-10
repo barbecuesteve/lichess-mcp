@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnyToolDefinition, tool, ADDITIVE, READ_ONLY } from "../registry.js";
+import { AnyToolDefinition, tool, ADDITIVE } from "../registry.js";
 import { SITE_BASE_URL } from "../http/client.js";
 
 const sendMessage = tool({
@@ -16,15 +16,4 @@ const sendMessage = tool({
   },
 });
 
-const getThread = tool({
-  name: "get_thread",
-  annotations: READ_ONLY,
-  description: "Get the message thread with a specific user",
-  schema: z.object({
-    userId: z.string().trim().min(1).describe("ID of the user whose thread to fetch"),
-  }),
-  handler: async ({ userId }, { client }) =>
-    client.json(`/inbox/${encodeURIComponent(userId)}`),
-});
-
-export const messagingTools: AnyToolDefinition[] = [sendMessage, getThread];
+export const messagingTools: AnyToolDefinition[] = [sendMessage];

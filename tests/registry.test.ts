@@ -13,6 +13,15 @@ describe("tool registry", () => {
     expect(unique.size).toBe(names.length);
   });
 
+  it("does not register tools for endpoints the Lichess API doesn't have", () => {
+    // Checked live: the /api/ forms return 404, and the site-root forms are
+    // website routes (GET /inbox/{user} redirects to login), not API endpoints.
+    const names = new Set(allTools.map((t) => t.name));
+    for (const name of ["create_simul", "join_simul", "withdraw_from_simul", "get_thread"]) {
+      expect(names.has(name), `${name} calls an endpoint that isn't in the API`).toBe(false);
+    }
+  });
+
   it("every tool has a non-empty description", () => {
     for (const t of allTools) {
       expect(t.description, `${t.name} has empty description`).toBeTruthy();
