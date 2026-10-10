@@ -1,0 +1,24 @@
+PR DRAFT for fix/team-members-max. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/team-members-max to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Merge note: #10 (streaming hangs) also adds a stream reader to src/http/parse.ts and tests/http/parse.test.ts. Expect a conflict there. Git splits it partway through the functions, so do NOT just concatenate both sides: that dropped the end of readFirstNdjsonLine on sparks (repaired in sparks commit 157f82b). Resolve by hand and run typecheck plus tests/http/parse.test.ts.
+
+=== ISSUE ===
+Title: get_team_members ignores its max: Lichess has no max parameter, so the tool reads the whole member list
+
+`GET /api/team/{teamId}/users` has no `max` parameter in the Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml); it streams every member as NDJSON. Live, `max=2` on lichess-swiss streamed 250 members in 5 seconds and kept going. The tool sends `?max=` and reads the whole stream, so for a big team it downloads and returns the full member list.
+
+=== PR ===
+Title: fix: get_team_members stops reading after max members
+Body:
+Closes #<issue>
+
+- Adds `parseNdjsonUpTo(response, max)` in `src/http/parse.ts`: reads NDJSON incrementally, stops at `max`, and cancels the body.
+- `get_team_members` uses it and no longer sends the ignored `max`.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: tests first (5 fail), then the fix.
+Verification: 365/365 tests pass. Live: 3 members from lichess-swiss in about 400ms.
+If #19 (contract test) has merged, remove the "UNKNOWN_QUERY max" entry from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
