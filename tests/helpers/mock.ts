@@ -57,7 +57,8 @@ export function installFetchMock(): FetchMock {
   };
 
   spy.respondStatus = (status: number, body = "") => {
-    spy.mockResolvedValueOnce(new Response(body, { status }));
+    // A 204 response must have a null body; an empty string is rejected.
+    spy.mockResolvedValueOnce(new Response(body === "" ? null : body, { status }));
   };
 
   spy.respondOpenStream = (chunks: string[]) => {
