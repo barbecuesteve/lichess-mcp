@@ -30,6 +30,10 @@ const spec: Spec = {
     "/api/broadcast/{tourSlug}/{roundSlug}/{roundId}": { get: {} },
     "/broadcast/{id}/players/{playerId}": { get: {} },
     "/broadcast/{id}": { get: {} },
+    "/api/broadcast/{tourId}": { get: {} },
+    "/api/broadcast/{tourId}.pgn": {
+      get: { parameters: [{ name: "clocks", in: "query", schema: { type: "boolean" } }] },
+    },
     "/standard": { servers: ["https://tablebase.lichess.org"], get: {} },
   },
 };
@@ -78,6 +82,11 @@ describe("checkRequest", () => {
 
   it("prefers a literal path over a templated one", () => {
     expect(checkRequest({ ...get("https://lichess.org/broadcast/new"), method: "POST" }, spec)).toEqual([]);
+  });
+
+  it("prefers the template with more literal text when parameter counts tie", () => {
+    // /api/broadcast/b1.pgn fits both /api/broadcast/{tourId} and /api/broadcast/{tourId}.pgn.
+    expect(checkRequest(get("https://lichess.org/api/broadcast/b1.pgn?clocks=true"), spec)).toEqual([]);
   });
 
   it("flags the wrong host", () => {
