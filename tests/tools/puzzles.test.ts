@@ -58,13 +58,13 @@ describe("get_next_puzzle", () => {
     mock.respondJson({});
 
     await findTool("get_next_puzzle").handler(
-      { angle: "endgame", difficulty: "hard", color: "white" },
+      { angle: "endgame", difficulty: "harder", color: "white" },
       makeContext(),
     );
 
     const [url] = mock.mock.calls[0] as [string, unknown];
     expect(url).toContain("angle=endgame");
-    expect(url).toContain("difficulty=hard");
+    expect(url).toContain("difficulty=harder");
     expect(url).toContain("color=white");
   });
 });
@@ -84,13 +84,13 @@ describe("get_puzzle_batch", () => {
     mock.respondJson({ puzzles: [] });
 
     await findTool("get_puzzle_batch").handler(
-      { angle: "endgame", nb: 50, difficulty: "medium" },
+      { angle: "endgame", nb: 50, difficulty: "normal" },
       makeContext(),
     );
 
     const [url] = mock.mock.calls[0] as [string, unknown];
     expect(url).toContain("nb=50");
-    expect(url).toContain("difficulty=medium");
+    expect(url).toContain("difficulty=normal");
   });
 
   it("includes color param when provided", async () => {
@@ -237,5 +237,17 @@ describe("get_puzzle_storm_dashboard", () => {
     expect(() =>
       findTool("get_puzzle_storm_dashboard").schema.parse({ username: "alice", days: 31 }),
     ).toThrow();
+  });
+});
+
+describe("puzzle difficulty", () => {
+  it("accepts only the spec's values, as play_puzzle already does", () => {
+    for (const name of ["get_next_puzzle", "get_puzzle_batch"]) {
+      const schema = findTool(name).schema;
+      const base = name === "get_puzzle_batch" ? { angle: "mix" } : {};
+      expect(() => schema.parse({ ...base, difficulty: "harder" }), name).not.toThrow();
+      expect(() => schema.parse({ ...base, difficulty: "hard" }), name).toThrow();
+      expect(() => schema.parse({ ...base, difficulty: "medium" }), name).toThrow();
+    }
   });
 });
