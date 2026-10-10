@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AnyToolDefinition, tool } from "../registry.js";
+import { SITE_BASE_URL } from "../http/client.js";
 
 const teamIdSchema = z.object({
   teamId: z.string().trim().min(1).describe("The team ID"),
@@ -40,7 +41,7 @@ const joinTeam = tool({
     message: z.string().optional().describe("Optional message for team leaders"),
   }),
   handler: async ({ teamId, message }, { client }) => {
-    await client.postForm(`/team/${encodeURIComponent(teamId)}/join`, { message });
+    await client.postForm(`/team/${encodeURIComponent(teamId)}/join`, { message }, { baseUrl: SITE_BASE_URL });
     return `Successfully joined team ${teamId}`;
   },
 });
@@ -50,7 +51,7 @@ const leaveTeam = tool({
   description: "Leave a team",
   schema: teamIdSchema,
   handler: async ({ teamId }, { client }) => {
-    await client.post(`/team/${encodeURIComponent(teamId)}/quit`);
+    await client.post(`/team/${encodeURIComponent(teamId)}/quit`, { baseUrl: SITE_BASE_URL });
     return `Successfully left team ${teamId}`;
   },
 });
@@ -175,7 +176,7 @@ const pmAllTeamMembers = tool({
     message: z.string().trim().min(1).describe("Message to send"),
   }),
   handler: async ({ teamId, message }, { client }) => {
-    await client.postForm(`/team/${encodeURIComponent(teamId)}/pm-all`, { message });
+    await client.postForm(`/team/${encodeURIComponent(teamId)}/pm-all`, { message }, { baseUrl: SITE_BASE_URL });
     return `Message sent to all members of team ${teamId}`;
   },
 });
