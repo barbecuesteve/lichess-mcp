@@ -1,0 +1,22 @@
+PR DRAFT for fix/tablebase-dtc. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/tablebase-dtc to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+
+=== ISSUE ===
+Title: lookup_standard_tablebase: dtc is a boolean, but the tablebase only accepts never/auxiliary/always
+
+`lookup_standard_tablebase` sends `dtc=true` or `dtc=false`. The Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml, `GET /standard`) defines `dtc` as an enum: `never`, `auxiliary` (the default), `always`.
+
+Live, on tablebase.lichess.org: `dtc=true` and `dtc=false` both return 400; `never`, `auxiliary` and `always` all return 200.
+
+=== PR ===
+Title: fix: send tablebase dtc as never/auxiliary/always
+Body:
+Closes #<issue>
+
+`dtc` is now `z.enum(["never", "auxiliary", "always"]).optional()`, and its description follows the spec. Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: test first (2 tests fail), then the fix.
+Verification: 362/362 tests pass. Live: true/false return 400; all three enum values return 200.
+If #19 (contract test) has merged, also remove the tablebase dtc entry from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
