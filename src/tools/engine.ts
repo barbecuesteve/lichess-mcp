@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AnyToolDefinition, tool } from "../registry.js";
+import { parseNdjson } from "../http/parse.js";
 
 const engineIdSchema = z.object({
   id: z.string().trim().min(1).describe("The external engine ID"),
@@ -70,27 +71,53 @@ const deleteExternalEngine = tool({
   },
 });
 
+/**
+ * The analyse and work endpoints are served by engine.lichess.ovh, not
+ * lichess.org, and authenticate with secrets in the body rather than OAuth.
+ */
+const ENGINE_BASE_URL = "https://engine.lichess.ovh/api";
+const engineHost = { baseUrl: ENGINE_BASE_URL, auth: false } as const;
+
 const analyseWithExternalEngine = tool({
   name: "analyse_with_external_engine",
-  description: "Request analysis from an external engine",
+  description:
+    "Request analysis from an external engine. Returns the final evaluation once the search limit is reached.",
   schema: z.object({
     id: z.string().trim().min(1).describe("The external engine ID"),
-    work: z.object({
-      sessionId: z.string().describe("Unique session ID"),
-      threads: z.number().int().min(1).describe("Number of threads to use"),
-      hash: z.number().int().min(1).describe("Hash table size in MiB"),
-      multiPv: z.number().int().min(1).max(5).optional().describe("Number of PVs"),
-      variant: z.string().optional(),
-      initialFen: z.string().describe("Initial position FEN"),
-      moves: z.array(z.string()).describe("Moves played from initial position"),
-    }),
+    clientSecret: z
+      .string()
+      .min(1)
+      .describe("The engine's clientSecret, as returned by get_external_engine"),
+    work: z
+      .object({
+        sessionId: z.string().describe("Arbitrary string identifying the analysis session"),
+        threads: z.number().int().min(1).describe("Number of threads to use"),
+        hash: z.number().int().min(1).describe("Hash table size in MiB"),
+        multiPv: z.number().int().min(1).max(5).default(1).describe("Number of principal variations"),
+        variant: z
+          .enum(["chess", "crazyhouse", "antichess", "atomic", "horde", "kingofthehill", "racingkings", "3check"])
+          .default("chess"),
+        initialFen: z.string().describe("Initial position FEN"),
+        moves: z.array(z.string()).describe("Moves played from the initial position, in UCI"),
+        movetime: z.number().int().min(1).optional().describe("Search limit: time in milliseconds"),
+        depth: z.number().int().min(1).optional().describe("Search limit: target depth"),
+        nodes: z.number().int().min(1).optional().describe("Search limit: number of nodes"),
+      })
+      .refine(
+        (w) => [w.movetime, w.depth, w.nodes].filter((v) => v !== undefined).length === 1,
+        { message: "Set exactly one search limit: movetime, depth or nodes" },
+      ),
   }),
-  handler: async ({ id, work }, { client }) => {
+  handler: async ({ id, clientSecret, work }, { client }) => {
+    // The response streams NDJSON until the search limit is reached; the last
+    // event is the final evaluation.
     const response = await client.postJson(
       `/external-engine/${encodeURIComponent(id)}/analyse`,
-      work,
+      { clientSecret, work },
+      engineHost,
     );
-    return (await response.json()) as object;
+    const events = await parseNdjson<object>(response);
+    return events.at(-1) ?? "The engine returned no analysis";
   },
 });
 
@@ -101,7 +128,8 @@ const acquireExternalEngineWork = tool({
     providerSecret: z.string().min(16).describe("The engine provider secret"),
   }),
   handler: async ({ providerSecret }, { client }) => {
-    const response = await client.postJson("/external-engine/work", { providerSecret });
+    const response = await client.postJson("/external-engine/work", { providerSecret }, engineHost);
+    if (response.status === 204) return "No analysis work available right now";
     return (await response.json()) as object;
   },
 });
@@ -111,10 +139,15 @@ const submitExternalEngineWork = tool({
   description: "Submit analysis results for a work request",
   schema: z.object({
     id: z.string().trim().min(1).describe("The work request ID"),
-    pgn: z.string().trim().min(1).describe("Analysis results in PGN/UCI format"),
+    pgn: z.string().trim().min(1).describe("Analysis results as UCI engine output"),
   }),
   handler: async ({ id, pgn }, { client }) => {
-    await client.postText(`/external-engine/work/${encodeURIComponent(id)}`, pgn, "text/plain");
+    await client.postText(
+      `/external-engine/work/${encodeURIComponent(id)}`,
+      pgn,
+      "text/plain",
+      engineHost,
+    );
     return `Work ${id} submitted`;
   },
 });
