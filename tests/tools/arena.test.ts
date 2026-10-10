@@ -146,14 +146,26 @@ describe("update_arena", () => {
     mock.respondJson({ id: "myTournament" });
 
     await findTool("update_arena").handler(
-      { tournamentId: "myTournament", name: "Updated Name" },
+      { tournamentId: "myTournament", name: "Updated Name", clockTime: 3, clockIncrement: 2, minutes: 45 },
       makeContext(),
     );
 
     const [url, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
     expect(url).toBe(apiUrl("/tournament/myTournament"));
     expect(init.method).toBe("POST");
-    expect(init.body?.toString()).toContain("name=Updated+Name");
+    const form = new URLSearchParams(String(init.body));
+    expect(form.get("name")).toBe("Updated Name");
+    expect(form.get("clockTime")).toBe("3");
+    expect(form.get("clockIncrement")).toBe("2");
+    expect(form.get("minutes")).toBe("45");
+  });
+
+  it("requires clockTime, clockIncrement and minutes, which the spec requires on every edit", () => {
+    const schema = findTool("update_arena").schema;
+    expect(() => schema.parse({ tournamentId: "t", name: "Only a name" })).toThrow();
+    expect(() =>
+      schema.parse({ tournamentId: "t", clockTime: 3, clockIncrement: 2, minutes: 45 }),
+    ).not.toThrow();
   });
 });
 
