@@ -1,0 +1,6 @@
+DRAFT for test/contract-template-specificity. Not opened yet. This branch is STACKED on test/openapi-contract (PR #19), not on upstream main.
+Options when the hold lifts:
+ (a) If #19 is still open: push these commits onto barbecuesteve:test/openapi-contract, which updates PR #19, and note the change in a PR comment.
+ (b) If #19 has merged: rebase onto main and open a small follow-up PR (no issue needed).
+Content: the checker prefers more literal templates on ties (fixes 2 false positives on /api/broadcast/{id}.pgn), and the known-mismatch groups are relabeled with live findings (difficulty ignored; numeric status is a spec gap; team users max ignored).
+Note: entries in known-mismatches.ts may need updating, depending on which fix PRs have merged by then. Run the full suite; the stale-entry check lists the lines to remove.
