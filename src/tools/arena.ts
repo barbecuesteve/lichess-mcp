@@ -128,13 +128,14 @@ const getTeamBattleResults = tool({
 const updateArena = tool({
   name: "update_arena",
   annotations: DESTRUCTIVE,
-  description: "Update an existing arena tournament",
+  description:
+    "Update an existing arena tournament. Lichess requires clockTime, clockIncrement and minutes on every update; use get_arena_info to read the current values.",
   schema: z.object({
     tournamentId: z.string().trim().min(1).describe("The tournament ID"),
     name: z.string().optional(),
-    clockTime: z.number().optional(),
-    clockIncrement: z.number().int().optional(),
-    minutes: z.number().int().optional(),
+    clockTime: z.number().min(0).describe("Clock initial time in minutes"),
+    clockIncrement: z.number().int().min(0).describe("Clock increment in seconds"),
+    minutes: z.number().int().min(1).describe("Tournament duration in minutes"),
     variant: z.enum(VARIANTS).optional(),
     rated: z.boolean().optional(),
     description: z.string().optional(),
