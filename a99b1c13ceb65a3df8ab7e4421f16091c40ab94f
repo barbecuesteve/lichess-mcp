@@ -1,0 +1,23 @@
+PR DRAFT for fix/study-chapter-tags. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/study-chapter-tags to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Confidence note: from the spec only, not verified live (needs a token and a study you own). This changes the tool's input from `name` to `tags`, a breaking change to the tool schema; the old input couldn't work.
+
+=== ISSUE ===
+Title: update_study_chapter_tags can't set tags: it sends `name`, but the endpoint reads a `pgn` field
+
+Per the Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml), `POST /api/study/{studyId}/{chapterId}/tags` takes one form field, `pgn`: PGN text whose tag pairs are applied. An empty value deletes a tag, and omitted tags are kept. The tool's only input is `name`, sent as a form field the endpoint doesn't read.
+
+=== PR ===
+Title: fix: send study chapter tags as PGN text, as the endpoint expects
+Body:
+Closes #<issue>
+
+`update_study_chapter_tags` now takes `tags: Record<string, string>` and posts `pgn` built as `[Name "value"]` lines, with PGN escaping for `\` and `"`. Tag names are validated as PGN symbols, and at least one tag is required.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: tests first (3 fail), then the fix.
+Verification: 363/363 tests pass. Not exercised live.
+If #19 (contract test) has merged, remove the "chapter tags" group from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
