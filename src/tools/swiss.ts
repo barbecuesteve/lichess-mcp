@@ -119,19 +119,25 @@ const withdrawFromSwiss = tool({
 
 const updateSwiss = tool({
   name: "update_swiss",
-  description: "Update a Swiss tournament",
+  description:
+    "Update a Swiss tournament. Lichess requires clock and nbRounds on every update; use get_swiss_info to read the current values.",
   schema: z.object({
     swissId: z.string().trim().min(1).describe("The Swiss tournament ID"),
     name: z.string().optional(),
-    nbRounds: z.number().int().min(1).optional(),
+    clock: z.object({
+      limit: z.number().min(0).describe("Clock time in seconds"),
+      increment: z.number().min(0).describe("Clock increment in seconds"),
+    }),
+    nbRounds: z.number().int().min(1).describe("Number of rounds"),
     rated: z.boolean().optional(),
     description: z.string().optional(),
   }),
-  handler: async ({ swissId, ...fields }, { client }) => {
-    const response = await client.postForm(
-      `/swiss/${encodeURIComponent(swissId)}/edit`,
-      fields,
-    );
+  handler: async ({ swissId, clock, ...fields }, { client }) => {
+    const response = await client.postForm(`/swiss/${encodeURIComponent(swissId)}/edit`, {
+      ...fields,
+      "clock.limit": clock.limit,
+      "clock.increment": clock.increment,
+    });
     return (await response.json()) as object;
   },
 });
