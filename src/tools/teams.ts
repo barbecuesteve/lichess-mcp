@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AnyToolDefinition, tool, ADDITIVE, DESTRUCTIVE, READ_ONLY } from "../registry.js";
 import { SITE_BASE_URL } from "../http/client.js";
+import { parseNdjsonUpTo } from "../http/parse.js";
 
 const teamIdSchema = z.object({
   teamId: z.string().trim().min(1).describe("The team ID"),
@@ -23,8 +24,10 @@ const getTeamMembers = tool({
     teamId: z.string().trim().min(1),
     max: z.number().int().min(1).default(100).describe("Maximum number of members to fetch"),
   }),
+  // The endpoint streams every member and has no limit parameter, so stop
+  // reading after max.
   handler: async ({ teamId, max }, { client }) =>
-    client.ndjson(`/team/${encodeURIComponent(teamId)}/users?max=${max}`),
+    parseNdjsonUpTo(await client.request(`/team/${encodeURIComponent(teamId)}/users`), max),
 });
 
 const getTeamJoinRequests = tool({

@@ -68,6 +68,5 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
   ...group("Query param not in the spec. Unverified whether Lichess honours it.", [
     "GET /api/broadcast/{broadcastTournamentId} UNKNOWN_QUERY clocks",
     "GET /api/broadcast/{broadcastTournamentId} UNKNOWN_QUERY comments",
-    "GET /api/team/{teamId}/users UNKNOWN_QUERY max",
   ]),
 ];
