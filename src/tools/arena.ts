@@ -52,8 +52,15 @@ const createArena = tool({
       })
       .optional(),
   }),
-  handler: async (args, { client }) => {
-    const response = await client.postJson("/tournament", args);
+  handler: async ({ conditions, ...fields }, { client }) => {
+    // The endpoint takes a form, with entry conditions as dotted field names.
+    const response = await client.postForm("/tournament", {
+      ...fields,
+      "conditions.minRating.rating": conditions?.minRating,
+      "conditions.maxRating.rating": conditions?.maxRating,
+      "conditions.nbRatedGame.nb": conditions?.nbRatedGame,
+      "conditions.teamMember.teamId": conditions?.teamMember,
+    });
     return (await response.json()) as object;
   },
 });

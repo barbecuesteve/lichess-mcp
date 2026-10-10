@@ -50,6 +50,42 @@ describe("create_arena", () => {
   });
 });
 
+describe("create_arena request body", () => {
+  it("sends a form, as the spec requires", async () => {
+    const mock = installFetchMock();
+    mock.respondJson({ id: "newTournament" });
+
+    const args = findTool("create_arena").schema.parse({ name: "My Blitz" });
+    await findTool("create_arena").handler(args, makeContext());
+
+    const [, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
+    expect(init.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded");
+    const form = new URLSearchParams(String(init.body));
+    expect(form.get("name")).toBe("My Blitz");
+    expect(form.get("clockTime")).toBe("3");
+    expect(form.get("rated")).toBe("true");
+  });
+
+  it("flattens conditions into the spec's dotted field names", async () => {
+    const mock = installFetchMock();
+    mock.respondJson({ id: "newTournament" });
+
+    const args = findTool("create_arena").schema.parse({
+      name: "Restricted",
+      conditions: { minRating: 1500, maxRating: 2000, nbRatedGame: 20, teamMember: "my-team" },
+    });
+    await findTool("create_arena").handler(args, makeContext());
+
+    const [, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
+    const form = new URLSearchParams(String(init.body));
+    expect(form.get("conditions.minRating.rating")).toBe("1500");
+    expect(form.get("conditions.maxRating.rating")).toBe("2000");
+    expect(form.get("conditions.nbRatedGame.nb")).toBe("20");
+    expect(form.get("conditions.teamMember.teamId")).toBe("my-team");
+    expect(form.has("conditions")).toBe(false);
+  });
+});
+
 describe("get_arena_info", () => {
   it("GETs /api/tournament/{id}", async () => {
     const mock = installFetchMock();
