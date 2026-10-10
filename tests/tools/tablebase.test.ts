@@ -25,17 +25,21 @@ describe("lookup_standard_tablebase", () => {
     expect(init.headers.get("Authorization")).toBeNull();
   });
 
-  it("includes dtc param when provided", async () => {
+  it("passes dtc through as never/auxiliary/always", async () => {
     const mock = installFetchMock();
     mock.respondJson({ category: "win" });
 
-    await findTool("lookup_standard_tablebase").handler(
-      { fen: SAMPLE_FEN, dtc: true },
-      makeContext(),
-    );
+    const args = findTool("lookup_standard_tablebase").schema.parse({ fen: SAMPLE_FEN, dtc: "always" });
+    await findTool("lookup_standard_tablebase").handler(args, makeContext());
 
     const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toContain("dtc=true");
+    expect(new URL(url).searchParams.get("dtc")).toBe("always");
+  });
+
+  it("rejects a boolean dtc, which the tablebase answers with 400", () => {
+    const schema = findTool("lookup_standard_tablebase").schema;
+    expect(() => schema.parse({ fen: SAMPLE_FEN, dtc: true })).toThrow();
+    expect(() => schema.parse({ fen: SAMPLE_FEN, dtc: "sometimes" })).toThrow();
   });
 });
 
