@@ -1,0 +1,30 @@
+PR DRAFT for fix/remove-nonexistent-endpoints. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/remove-nonexistent-endpoints to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Heads-up: this REMOVES tools the original authors deliberately kept ("kept for usability", "kept for backward compatibility" in test comments). Frame it as evidence, and expect the maintainer may prefer something else.
+
+=== ISSUE ===
+Title: create_simul, join_simul, withdraw_from_simul and get_thread call endpoints that don't exist (404)
+
+The Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml) has only `GET /api/simul` for simuls, and no endpoint for reading an inbox thread (only `POST /inbox/{username}` for sending).
+
+Live, without a token:
+- POST /api/simul/new, /api/simul/{id}/join, /api/simul/{id}/withdraw: 404
+- GET /api/inbox/{user}: 404
+- The site-root versions are website routes, not API endpoints; GET /inbox/{user} redirects (303) to the login page.
+
+The test comments say these were kept for usability and backward compatibility, but every call fails.
+
+=== PR ===
+Title: fix: remove tools for endpoints the Lichess API doesn't have
+Body:
+Closes #<issue>
+
+Removes `create_simul`, `join_simul`, `withdraw_from_simul` and `get_thread` (188 tools become 184). `get_current_simuls` and `send_message` stay. Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: a registry test asserting these aren't registered (fails), then the removal.
+Verification: 357/357 tests pass; probe results are in the issue.
+Merge interactions:
+- If #12 (annotations) has merged, remove these four names from DESTRUCTIVE/ADDITIVE/READ_ONLY expectations in tests/annotations.test.ts.
+- If #19 (contract test) has merged, remove the simul/get_thread group from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
