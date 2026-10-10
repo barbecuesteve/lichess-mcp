@@ -87,7 +87,7 @@ const declineChallenge = tool({
     reason: z.enum(DECLINE_REASONS).optional().default("generic").describe("Reason for declining"),
   }),
   handler: async ({ challengeId, reason }, { client }) => {
-    await client.postJson(`/challenge/${encodeURIComponent(challengeId)}/decline`, { reason });
+    await client.postForm(`/challenge/${encodeURIComponent(challengeId)}/decline`, { reason });
     return `Challenge ${challengeId} declined`;
   },
 });
