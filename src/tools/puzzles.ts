@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { AnyToolDefinition, tool, ADDITIVE, READ_ONLY } from "../registry.js";
 
+const puzzleDifficulty = z
+  .enum(["easiest", "easier", "normal", "harder", "hardest"])
+  .optional()
+  .describe("Difficulty band relative to the user's puzzle rating");
+
 const getDailyPuzzle = tool({
   name: "get_daily_puzzle",
   annotations: READ_ONLY,
@@ -26,7 +31,7 @@ const getNextPuzzle = tool({
   description: "Get the next puzzle for the authenticated user",
   schema: z.object({
     angle: z.string().optional().describe("Puzzle theme/angle"),
-    difficulty: z.string().optional().describe("Difficulty level"),
+    difficulty: puzzleDifficulty,
     color: z.enum(["white", "black"]).optional().describe("Color to play"),
   }),
   handler: async ({ angle, difficulty, color }, { client }) => {
@@ -46,7 +51,7 @@ const getPuzzleBatch = tool({
   schema: z.object({
     angle: z.string().trim().min(1).describe("Puzzle theme/angle (use 'mix' for mixed)"),
     nb: z.number().int().min(1).max(500).optional().describe("Number of puzzles (max 500)"),
-    difficulty: z.string().optional().describe("Difficulty level"),
+    difficulty: puzzleDifficulty,
     color: z.enum(["white", "black"]).optional().describe("Color to play"),
   }),
   handler: async ({ angle, nb, difficulty, color }, { client }) => {
