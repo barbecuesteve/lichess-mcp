@@ -20,9 +20,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
     "POST https://lichess.org/api/simul/mySimul/withdraw UNKNOWN_PATH",
     "POST https://lichess.org/api/simul/new UNKNOWN_PATH",
   ]),
-  ...group("GET /api/tv (no channel) is not an API endpoint. Confirmed live: 404.", [
-    "GET https://lichess.org/api/tv UNKNOWN_PATH",
-  ]),
   ...group("Spec gap: /api/timeline exists (live returns 401 without a token) but isn't in the spec.", [
     "GET https://lichess.org/api/timeline UNKNOWN_PATH",
   ]),

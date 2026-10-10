@@ -31,16 +31,17 @@ const getTvChannels = tool({
 const getTvGame = tool({
   name: "get_tv_game",
   annotations: READ_ONLY,
-  description: "Get current TV game in PGN format",
+  description: "Get the current game on a Lichess TV channel, in PGN format",
   schema: z.object({
     channel: z
       .enum(TV_CHANNELS)
-      .optional()
-      .describe("Channel name like 'bot', 'blitz', etc."),
+      .default("best")
+      .describe("Channel name like 'bot', 'blitz', etc. Defaults to 'best' (top rated)."),
   }),
   handler: async ({ channel }, { client }) => {
-    const path = channel ? `/tv/${channel}` : "/tv";
-    const result = await client.pgnOrJson(path);
+    // There is no channel-less /api/tv endpoint, and /api/tv/{channel}
+    // returns the last 10 games unless nb is set.
+    const result = await client.pgnOrJson(`/tv/${channel}?nb=1`);
     return result.kind === "pgn" ? result.pgn : (result.data as object);
   },
 });
