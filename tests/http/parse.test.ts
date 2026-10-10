@@ -77,6 +77,8 @@ describe("readFirstNdjsonLine", () => {
     const result = await readFirstNdjsonLine(new Response(stream.body), 20);
     expect(result).toBeNull();
     expect(stream.cancelled()).toBe(true);
+  });
+});
 
 describe("parseNdjsonUpTo", () => {
   /** A body that emits the given chunks and stays open, like a long member list. */

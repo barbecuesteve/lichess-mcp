@@ -64,6 +64,9 @@ export async function readFirstNdjsonLine<T = unknown>(
     return line === null ? null : (JSON.parse(line) as T);
   } finally {
     clearTimeout(timer);
+    await reader.cancel().catch(() => {});
+  }
+}
 
 /**
  * Reads up to `max` objects from an NDJSON response, then cancels the body.
