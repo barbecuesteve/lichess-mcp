@@ -13,11 +13,16 @@ const lookupStandardTablebase = tool({
   description: "Look up a position in the Syzygy tablebase (standard chess)",
   schema: z.object({
     fen: z.string().trim().min(1).describe("FEN of the position"),
-    dtc: z.boolean().optional().describe("Include distance to conversion (DTC) metric"),
+    dtc: z
+      .enum(["never", "auxiliary", "always"])
+      .optional()
+      .describe(
+        "When to query distance to conversion (DTC). Default is auxiliary: only when the position isn't covered by the other tablebases",
+      ),
   }),
   handler: async ({ fen, dtc }, { client }) => {
     const params = new URLSearchParams({ fen });
-    if (dtc !== undefined) params.set("dtc", String(dtc));
+    if (dtc) params.set("dtc", dtc);
     return client.json(`/standard?${params.toString()}`, {
       baseUrl: TABLEBASE_BASE,
       auth: false,
