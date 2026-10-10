@@ -148,14 +148,27 @@ describe("update_swiss", () => {
     mock.respondJson({ id: "swissId" });
 
     await findTool("update_swiss").handler(
-      { swissId: "swissId", name: "Updated Swiss" },
+      { swissId: "swissId", name: "Updated Swiss", clock: { limit: 300, increment: 3 }, nbRounds: 7 },
       makeContext(),
     );
 
     const [url, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
     expect(url).toBe(apiUrl("/swiss/swissId/edit"));
     expect(init.method).toBe("POST");
-    expect(init.body?.toString()).toContain("name=Updated+Swiss");
+    const form = new URLSearchParams(String(init.body));
+    expect(form.get("name")).toBe("Updated Swiss");
+    expect(form.get("clock.limit")).toBe("300");
+    expect(form.get("clock.increment")).toBe("3");
+    expect(form.get("nbRounds")).toBe("7");
+    expect(form.has("clock")).toBe(false);
+  });
+
+  it("requires clock and nbRounds, which the spec requires on every edit", () => {
+    const schema = findTool("update_swiss").schema;
+    expect(() => schema.parse({ swissId: "s", name: "Only a name" })).toThrow();
+    expect(() =>
+      schema.parse({ swissId: "s", clock: { limit: 300, increment: 3 }, nbRounds: 7 }),
+    ).not.toThrow();
   });
 });
 
