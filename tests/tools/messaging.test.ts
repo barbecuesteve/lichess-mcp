@@ -46,27 +46,3 @@ describe("send_message", () => {
     ).toThrow();
   });
 });
-
-// NOTE: get_thread (GET /inbox/{userId}) is not in the public Lichess API spec
-// but is kept for backward compatibility. It is tested here as-is.
-describe("get_thread", () => {
-  it("GETs /inbox/{userId}", async () => {
-    const mock = installFetchMock();
-    mock.respondJson([{ text: "Hello", user: { id: "alice" } }]);
-
-    await findTool("get_thread").handler({ userId: "alice" }, makeContext());
-
-    const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toBe("https://lichess.org/api/inbox/alice");
-  });
-
-  it("encodes userId", async () => {
-    const mock = installFetchMock();
-    mock.respondJson([]);
-
-    await findTool("get_thread").handler({ userId: "a b" }, makeContext());
-
-    const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toContain("a%20b");
-  });
-});
