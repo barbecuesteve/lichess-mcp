@@ -24,7 +24,7 @@ describe("get_team_info", () => {
 });
 
 describe("get_team_members", () => {
-  it("GETs /api/team/{teamId}/users with max param", async () => {
+  it("GETs /api/team/{teamId}/users without max, which Lichess ignores", async () => {
     const mock = installFetchMock();
     mock.respondNdjson([{ id: "alice" }]);
 
@@ -34,8 +34,19 @@ describe("get_team_members", () => {
     );
 
     const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toContain("/team/lichess-coders/users");
-    expect(url).toContain("max=50");
+    expect(url).toBe(apiUrl("/team/lichess-coders/users"));
+  });
+
+  it("stops reading after max members (the endpoint streams the whole team)", async () => {
+    const mock = installFetchMock();
+    mock.respondNdjson([{ id: "a" }, { id: "b" }, { id: "c" }, { id: "d" }]);
+
+    const result = await findTool("get_team_members").handler(
+      { teamId: "lichess-coders", max: 2 },
+      makeContext(),
+    );
+
+    expect(result).toEqual([{ id: "a" }, { id: "b" }]);
   });
 });
 
