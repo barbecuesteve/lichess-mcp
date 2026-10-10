@@ -138,17 +138,47 @@ describe("import_study_pgn", () => {
 });
 
 describe("update_study_chapter_tags", () => {
-  it("POSTs to /api/study/{studyId}/{chapterId}/tags", async () => {
+  it("POSTs the tags as PGN text in a pgn form field", async () => {
     const mock = installFetchMock();
     mock.respondStatus(200);
 
-    await findTool("update_study_chapter_tags").handler(
-      { studyId: "sid", chapterId: "cid", name: "My Chapter" },
-      makeContext(),
-    );
+    const args = findTool("update_study_chapter_tags").schema.parse({
+      studyId: "sid",
+      chapterId: "cid",
+      tags: { White: "Carlsen, Magnus", Black: "Nakamura, Hikaru", Annotator: "" },
+    });
+    await findTool("update_study_chapter_tags").handler(args, makeContext());
 
-    const [url] = mock.mock.calls[0] as [string, unknown];
+    const [url, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
     expect(url).toBe(apiUrl("/study/sid/cid/tags"));
+    const form = new URLSearchParams(String(init.body));
+    expect([...form.keys()]).toEqual(["pgn"]);
+    expect(form.get("pgn")).toBe(
+      '[White "Carlsen, Magnus"]\n[Black "Nakamura, Hikaru"]\n[Annotator ""]',
+    );
+  });
+
+  it("escapes quotes and backslashes in tag values, as PGN requires", async () => {
+    const mock = installFetchMock();
+    mock.respondStatus(200);
+
+    const args = findTool("update_study_chapter_tags").schema.parse({
+      studyId: "sid",
+      chapterId: "cid",
+      tags: { Event: 'The "Big" one \\ 2026' },
+    });
+    await findTool("update_study_chapter_tags").handler(args, makeContext());
+
+    const [, init] = mock.mock.calls[0] as [string, RequestInit];
+    expect(new URLSearchParams(String(init.body)).get("pgn")).toBe(
+      '[Event "The \\"Big\\" one \\\\ 2026"]',
+    );
+  });
+
+  it("rejects tag names that aren't valid PGN symbols, and an empty tag set", () => {
+    const schema = findTool("update_study_chapter_tags").schema;
+    expect(() => schema.parse({ studyId: "s", chapterId: "c", tags: { 'Bad"]Name': "x" } })).toThrow();
+    expect(() => schema.parse({ studyId: "s", chapterId: "c", tags: {} })).toThrow();
   });
 });
 
