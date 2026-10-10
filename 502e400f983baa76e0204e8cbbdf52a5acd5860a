@@ -1,6 +1,6 @@
 PR DRAFT for fix/team-members-max. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
 Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/team-members-max to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
-Merge note: #10 (streaming hangs) also adds a stream reader to src/http/parse.ts and tests/http/parse.test.ts. Expect an easy textual conflict there; keep both functions.
+Merge note: #10 (streaming hangs) also adds a stream reader to src/http/parse.ts and tests/http/parse.test.ts. Expect a conflict there. Git splits it partway through the functions, so do NOT just concatenate both sides: that dropped the end of readFirstNdjsonLine on sparks (repaired in sparks commit 157f82b). Resolve by hand and run typecheck plus tests/http/parse.test.ts.
 
 === ISSUE ===
 Title: get_team_members ignores its max: Lichess has no max parameter, so the tool reads the whole member list
