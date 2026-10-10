@@ -40,10 +40,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
     "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD sessionId",
     "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD threads",
   ]),
-  ...group("Spec wants a form body; the tool sends JSON.", [
-    "POST /api/challenge/{challengeId}/decline WRONG_CONTENT_TYPE sent application/json, spec wants application/x-www-form-urlencoded",
-    "POST /api/tournament WRONG_CONTENT_TYPE sent application/json, spec wants application/x-www-form-urlencoded",
-  ]),
   ...group("Spec requires these fields on every edit; the tool allows partial updates, which Lichess likely rejects.", [
     "POST /api/swiss/{id}/edit MISSING_FIELD clock.increment",
     "POST /api/swiss/{id}/edit MISSING_FIELD clock.limit",
