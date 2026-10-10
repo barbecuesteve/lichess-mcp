@@ -20,9 +20,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
     "POST https://lichess.org/api/simul/mySimul/withdraw UNKNOWN_PATH",
     "POST https://lichess.org/api/simul/new UNKNOWN_PATH",
   ]),
-  ...group("GET /api/tv (no channel) is not an API endpoint. Confirmed live: 404.", [
-    "GET https://lichess.org/api/tv UNKNOWN_PATH",
-  ]),
   ...group("Spec gap: /api/timeline exists (live returns 401 without a token) but isn't in the spec.", [
     "GET https://lichess.org/api/timeline UNKNOWN_PATH",
   ]),
@@ -55,9 +52,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
   ...group("Spec takes chapter tags as a pgn field; the tool can only send name.", [
     "POST /api/study/{studyId}/{chapterId}/tags MISSING_FIELD pgn",
     "POST /api/study/{studyId}/{chapterId}/tags UNKNOWN_FIELD name",
-  ]),
-  ...group("Tablebase dtc is an enum (never/auxiliary/always), not a boolean. Confirmed live: dtc=true returns 400.", [
-    "GET /standard BAD_QUERY_VALUE dtc=\"true\" not in [never, auxiliary, always]",
   ]),
   ...group("Value outside the spec's enum. Lichess accepted it live (200), so it may be ignored rather than rejected.", [
     "GET /api/puzzle/batch/{angle} BAD_QUERY_VALUE difficulty=\"medium\" not in [easiest, easier, normal, harder, hardest]",
