@@ -105,16 +105,28 @@ const importStudyPgn = tool({
 
 const updateStudyChapterTags = tool({
   name: "update_study_chapter_tags",
-  description: "Update tags for a study chapter",
+  description:
+    "Add, update or delete PGN tags of a study chapter. Tags you don't list are kept; an empty value deletes a tag.",
   schema: z.object({
     studyId: z.string().trim().min(1).describe("The study ID"),
     chapterId: z.string().trim().min(1).describe("The chapter ID"),
-    name: z.string().optional().describe("Chapter name"),
+    tags: z
+      .record(
+        z.string().regex(/^[A-Za-z0-9_]+$/, "PGN tag names use letters, digits and underscores"),
+        z.string(),
+      )
+      .refine((t) => Object.keys(t).length > 0, "Provide at least one tag")
+      .describe('PGN tags to set, e.g. { "White": "Carlsen, Magnus", "Annotator": "" }'),
   }),
-  handler: async ({ studyId, chapterId, ...tags }, { client }) => {
+  handler: async ({ studyId, chapterId, tags }, { client }) => {
+    // The endpoint reads tag pairs from PGN text; quotes and backslashes in
+    // values are escaped per the PGN standard.
+    const pgn = Object.entries(tags)
+      .map(([name, value]) => `[${name} "${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"]`)
+      .join("\n");
     await client.postForm(
       `/study/${encodeURIComponent(studyId)}/${encodeURIComponent(chapterId)}/tags`,
-      tags,
+      { pgn },
     );
     return `Tags updated for chapter ${chapterId} of study ${studyId}`;
   },
