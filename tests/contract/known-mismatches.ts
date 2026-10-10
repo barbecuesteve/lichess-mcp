@@ -60,8 +60,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
     "GET /standard BAD_QUERY_VALUE dtc=\"true\" not in [never, auxiliary, always]",
   ]),
   ...group("Value outside the spec's enum. Lichess accepted it live (200), so it may be ignored rather than rejected.", [
-    "GET /api/puzzle/batch/{angle} BAD_QUERY_VALUE difficulty=\"medium\" not in [easiest, easier, normal, harder, hardest]",
-    "GET /api/puzzle/next BAD_QUERY_VALUE difficulty=\"hard\" not in [easiest, easier, normal, harder, hardest]",
     "GET /api/team/{teamId}/arena BAD_QUERY_VALUE status=\"30\" not in [created, started, finished]",
     "GET /api/team/{teamId}/swiss BAD_QUERY_VALUE status=\"30\" not in [created, started, finished]",
   ]),
