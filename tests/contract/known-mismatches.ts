@@ -52,10 +52,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
     "POST /api/tournament/{id} MISSING_FIELD clockTime",
     "POST /api/tournament/{id} MISSING_FIELD minutes",
   ]),
-  ...group("Spec takes chapter tags as a pgn field; the tool can only send name.", [
-    "POST /api/study/{studyId}/{chapterId}/tags MISSING_FIELD pgn",
-    "POST /api/study/{studyId}/{chapterId}/tags UNKNOWN_FIELD name",
-  ]),
   ...group("Tablebase dtc is an enum (never/auxiliary/always), not a boolean. Confirmed live: dtc=true returns 400.", [
     "GET /standard BAD_QUERY_VALUE dtc=\"true\" not in [never, auxiliary, always]",
   ]),
