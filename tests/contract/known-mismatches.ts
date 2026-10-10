@@ -13,13 +13,6 @@ const group = (reason: string, mismatches: string[]): KnownMismatch[] =>
  * run fails if an entry stops occurring, so this list can only shrink.
  */
 export const KNOWN_MISMATCHES: KnownMismatch[] = [
-  ...group("Not in the Lichess API spec, so the endpoint probably doesn't exist (simul create/join/withdraw, reading an inbox thread).", [
-    "GET https://lichess.org/api/inbox/a%20b UNKNOWN_PATH",
-    "GET https://lichess.org/api/inbox/alice UNKNOWN_PATH",
-    "POST https://lichess.org/api/simul/mySimul/join UNKNOWN_PATH",
-    "POST https://lichess.org/api/simul/mySimul/withdraw UNKNOWN_PATH",
-    "POST https://lichess.org/api/simul/new UNKNOWN_PATH",
-  ]),
   ...group("GET /api/tv (no channel) is not an API endpoint. Confirmed live: 404.", [
     "GET https://lichess.org/api/tv UNKNOWN_PATH",
   ]),

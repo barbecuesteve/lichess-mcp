@@ -23,7 +23,6 @@ const DESTRUCTIVE = [
   // tournaments, simuls, broadcasts
   "update_arena", "update_team_battle", "terminate_arena", "withdraw_from_arena",
   "update_swiss", "schedule_next_swiss_round", "terminate_swiss", "withdraw_from_swiss",
-  "withdraw_from_simul",
   "update_broadcast_tournament", "update_broadcast_round", "reset_broadcast_round",
   "push_broadcast_round_pgn",
   // bulk pairings, engines, studies
@@ -47,7 +46,6 @@ const ADDITIVE = [
   "acquire_external_engine_work", "submit_external_engine_work",
   "import_game", "send_message",
   "follow_user", "unblock_user",
-  "create_simul", "join_simul",
   "create_study", "import_study_pgn", "add_study_chapter_moves",
   "create_swiss", "join_swiss",
   "join_team", "accept_join_request", "pm_all_team_members",
