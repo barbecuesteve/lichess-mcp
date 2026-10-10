@@ -25,33 +25,35 @@ describe("get_tv_channels", () => {
 });
 
 describe("get_tv_game", () => {
-  it("GETs /api/tv when no channel specified", async () => {
+  it("defaults to the 'best' channel when none is given (/api/tv alone is a 404)", async () => {
     const mock = installFetchMock();
     mock.respondPgn("[Event ?]");
 
-    await findTool("get_tv_game").handler({}, makeContext());
+    const args = findTool("get_tv_game").schema.parse({});
+    await findTool("get_tv_game").handler(args, makeContext());
 
     const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toBe(apiUrl("/tv"));
+    expect(url).toBe(apiUrl("/tv/best?nb=1"));
   });
 
   it("returns JSON data when server responds with JSON content-type", async () => {
     const mock = installFetchMock();
     mock.respondJson({ id: "abc", players: [] });
 
-    const result = await findTool("get_tv_game").handler({}, makeContext());
+    const args = findTool("get_tv_game").schema.parse({});
+    const result = await findTool("get_tv_game").handler(args, makeContext());
 
     expect(result).toMatchObject({ id: "abc" });
   });
 
-  it("GETs /api/tv/{channel} when channel specified", async () => {
+  it("GETs only the current game of the given channel (the endpoint defaults to 10)", async () => {
     const mock = installFetchMock();
     mock.respondPgn("[Event ?]");
 
     await findTool("get_tv_game").handler({ channel: "blitz" }, makeContext());
 
     const [url] = mock.mock.calls[0] as [string, unknown];
-    expect(url).toBe(apiUrl("/tv/blitz"));
+    expect(url).toBe(apiUrl("/tv/blitz?nb=1"));
   });
 
   it("rejects invalid channel (schema validation)", () => {
