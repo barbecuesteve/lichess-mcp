@@ -56,7 +56,7 @@ describe("accept_challenge", () => {
 });
 
 describe("decline_challenge", () => {
-  it("POSTs JSON to /api/challenge/{id}/decline", async () => {
+  it("POSTs the reason as a form to /api/challenge/{id}/decline", async () => {
     const mock = installFetchMock();
     mock.respondStatus(200);
 
@@ -67,9 +67,8 @@ describe("decline_challenge", () => {
 
     const [url, init] = mock.mock.calls[0] as [string, RequestInit & { headers: Headers }];
     expect(url).toBe(apiUrl("/challenge/abc123/decline"));
-    expect(init.headers.get("Content-Type")).toBe("application/json");
-    const body = JSON.parse(init.body as string);
-    expect(body.reason).toBe("tooFast");
+    expect(init.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded");
+    expect(new URLSearchParams(String(init.body)).get("reason")).toBe("tooFast");
   });
 });
 
