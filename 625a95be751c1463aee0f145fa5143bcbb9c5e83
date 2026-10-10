@@ -1,0 +1,26 @@
+PR DRAFT for fix/form-bodies. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/form-bodies to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Confidence note: NOT verified live (needs a token and would create a real tournament). The content-type mismatch is from the spec only; Lichess may accept JSON for plain fields. The conditions field-name mismatch is certain from the spec.
+
+=== ISSUE ===
+Title: create_arena and decline_challenge send JSON; the spec wants a form, and arena conditions use the wrong field names
+
+The Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml) defines `POST /api/tournament` and `POST /api/challenge/{challengeId}/decline` as `application/x-www-form-urlencoded`. Both tools send JSON.
+
+`create_arena` also sends entry conditions as `{ conditions: { minRating, maxRating, nbRatedGame, teamMember } }`. The spec's fields are `conditions.minRating.rating`, `conditions.maxRating.rating`, `conditions.nbRatedGame.nb` and `conditions.teamMember.teamId`, so rating, games and team restrictions can't be applied as sent.
+
+=== PR ===
+Title: fix: send create_arena and decline_challenge as form bodies
+Body:
+Closes #<issue>
+
+- `create_arena` posts a form and maps `conditions` to the spec's dotted fields; unset conditions are omitted.
+- `decline_challenge` posts `reason` as a form field.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: tests first (3 fail), then the fix.
+Verification: 363/363 tests pass. Not exercised live, since that would create a real tournament.
+If #19 (contract test) has merged, remove the "Spec wants a form body" group from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
