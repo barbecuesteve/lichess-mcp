@@ -26,20 +26,6 @@ export const KNOWN_MISMATCHES: KnownMismatch[] = [
   ...group("Spec gap: /api/timeline exists (live returns 401 without a token) but isn't in the spec.", [
     "GET https://lichess.org/api/timeline UNKNOWN_PATH",
   ]),
-  ...group("External-engine work endpoints are served by engine.lichess.ovh, not lichess.org.", [
-    "POST /api/external-engine/{id}/analyse WRONG_HOST spec host is https://engine.lichess.ovh",
-    "POST /api/external-engine/work WRONG_HOST spec host is https://engine.lichess.ovh",
-    "POST /api/external-engine/work/{id} WRONG_HOST spec host is https://engine.lichess.ovh",
-  ]),
-  ...group("analyse_with_external_engine sends the work object flat; the spec wants { clientSecret, work: {...} }.", [
-    "POST /api/external-engine/{id}/analyse MISSING_FIELD clientSecret",
-    "POST /api/external-engine/{id}/analyse MISSING_FIELD work",
-    "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD hash",
-    "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD initialFen",
-    "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD moves",
-    "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD sessionId",
-    "POST /api/external-engine/{id}/analyse UNKNOWN_FIELD threads",
-  ]),
   ...group("Spec wants a form body; the tool sends JSON.", [
     "POST /api/challenge/{challengeId}/decline WRONG_CONTENT_TYPE sent application/json, spec wants application/x-www-form-urlencoded",
     "POST /api/tournament WRONG_CONTENT_TYPE sent application/json, spec wants application/x-www-form-urlencoded",
