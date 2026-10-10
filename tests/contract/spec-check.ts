@@ -118,6 +118,11 @@ function parseBody(body: string, contentType: string | null): Record<string, unk
   return null;
 }
 
+/** Number of fixed characters in a path template, ignoring {params}. */
+function literalLength(template: string): number {
+  return template.replace(/\{[^}]+\}/g, "").length;
+}
+
 /** Number of fixed (non-{param}) segments in a path template. */
 function literalSegments(template: string): number {
   return template.split("/").filter((s) => s && !s.startsWith("{")).length;
@@ -158,8 +163,13 @@ export function checkRequest(request: CapturedRequest, spec: Spec): string[] {
 
   const byMethod = byPath
     .filter((o) => o.method === method)
-    // Prefer the most literal template, e.g. /broadcast/new over /broadcast/{id}.
-    .sort((a, b) => a.template.split("{").length - b.template.split("{").length);
+    // Prefer the most literal template: fewer parameters first (/broadcast/new
+    // over /broadcast/{id}), then more fixed text (/{id}.pgn over /{id}).
+    .sort(
+      (a, b) =>
+        a.template.split("{").length - b.template.split("{").length ||
+        literalLength(b.template) - literalLength(a.template),
+    );
   if (byMethod.length === 0) {
     const allowed = [...new Set(byPath.map((o) => o.method))].sort().join(", ");
     return [`${method} ${host}${url.pathname} WRONG_METHOD spec allows ${allowed}`];
