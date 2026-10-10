@@ -1,0 +1,31 @@
+PR DRAFT for fix/external-engine-host. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/external-engine-host to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+
+=== ISSUE ===
+Title: External-engine analyse/work tools call the wrong host, send the wrong body, and require a Lichess token
+
+Per the Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml), `POST /api/external-engine/{id}/analyse`, `/work` and `/work/{id}` are served by `https://engine.lichess.ovh` and use no OAuth (`security: []`).
+
+- All three tools call lichess.org, which returns 404 live.
+- They attach the user's Lichess token and fail when none is set.
+- `analyse_with_external_engine` sends the work object flat. The spec wants `{ clientSecret, work }`, and work needs exactly one of movetime, depth or nodes. Live, the flat body gets 422 "missing field `clientSecret`".
+- The analyse response is an NDJSON stream; the tool calls `response.json()` on it.
+- `acquire_external_engine_work` long-polls and can get 204 (live with a fake secret); `response.json()` fails on the empty body.
+
+=== PR ===
+Title: fix: send external-engine analyse/work calls to engine.lichess.ovh
+Body:
+Closes #<issue>
+
+- The three tools now call `https://engine.lichess.ovh/api` with `auth: false`.
+- `analyse_with_external_engine` takes `clientSecret`, sends `{ clientSecret, work }`, requires exactly one limit (movetime, depth or nodes), defaults `multiPv` to 1 and `variant` to "chess", and returns the final event of the stream.
+- `acquire_external_engine_work` returns a message on 204.
+- The test helper `respondStatus` now builds a null body when none is given, since a 204 can't have one.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: tests first (7 fail), then the fix.
+Verification: 365/365 tests pass. Live probes as listed in the issue; the new body gets "engine not found or invalid clientSecret" for a fake engine.
+If #19 (contract test) has merged, remove the engine host and analyse groups from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
