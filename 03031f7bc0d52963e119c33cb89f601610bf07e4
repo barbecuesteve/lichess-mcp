@@ -1,0 +1,23 @@
+PR DRAFT for fix/tv-game-channel. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/tv-game-channel to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+
+=== ISSUE ===
+Title: get_tv_game: no-channel call is a 404, and with a channel it returns 10 games
+
+- With no channel, `get_tv_game` calls `GET /api/tv`. That endpoint isn't in the Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml) and returns 404 live.
+- With a channel, it calls `/api/tv/{channel}`. That endpoint exports the channel's recent games, 10 by default (checked live), but the tool description promises "the current TV game".
+
+=== PR ===
+Title: fix: get_tv_game defaults to the 'best' channel and returns one game
+Body:
+Closes #<issue>
+
+- `channel` now defaults to `best` (top rated) instead of calling the nonexistent `/api/tv`.
+- Sends `nb=1`, so the tool returns the current game.
+- Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml (`/api/tv/{channel}`)
+
+Commits: test first (2 tests fail), then the fix.
+Verification: 361/361 tests pass. Live: `/api/tv` returns 404; `/api/tv/best?nb=1` returns one PGN game.
+If #19 (contract test) has merged, also remove the "/api/tv (no channel)" entry from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
