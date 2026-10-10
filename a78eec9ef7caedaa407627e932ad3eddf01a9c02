@@ -1,0 +1,23 @@
+PR DRAFT for fix/puzzle-difficulty-enum. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/puzzle-difficulty-enum to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Small, low-severity change. Consider folding it into another PR, or skipping it if the maintainer prefers fewer PRs.
+
+=== ISSUE ===
+Title: get_next_puzzle / get_puzzle_batch accept any difficulty string; invalid values are silently ignored
+
+The Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml) limits `difficulty` to easiest, easier, normal, harder, hardest; `play_puzzle` already enforces these. `get_next_puzzle` and `get_puzzle_batch` take any string, and their tests used "hard" and "medium". Lichess returns 200 for invalid values, so the setting is silently ignored.
+
+=== PR ===
+Title: fix: limit puzzle difficulty to easiest/easier/normal/harder/hardest
+Body:
+Closes #<issue>
+
+`get_next_puzzle` and `get_puzzle_batch` share a `difficulty` enum matching the spec and `play_puzzle`.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: test first (fails), then the fix.
+Verification: 362/362 tests pass.
+If #19 (contract test) has merged, remove the two difficulty entries from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
