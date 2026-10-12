@@ -17,7 +17,7 @@ Closes #<issue>
 - The server reads its version from package.json via createRequire; the UI imports it, and Vite inlines only the string.
 - `prepare` is removed. The README's manual install already has an explicit build step. Installing straight from git now needs `npm run build`.
 - vite.config.ts uses import.meta.dirname (Vite 8.3 warns about __dirname).
-- Coverage under vitest 5 reads 60% overall vs 79% under vitest 3, with no test removed: the v8 coverage remapping changed. Mention this so it isn't read as a regression.
+- Coverage reads lower under vitest 5 with the same tests: lines 80.6% -> 60.1%, branches 95.2% -> 51.5%. Likely cause (not verified per file): vitest 4 switched v8 coverage to AST-aware remapping, which counts more accurately. Mention it so it isn't read as a regression.
 
 Commits: test first (fails on main: version hard-coded), then the fix, then the dependency and prepare chores.
 Verification: 397/397 tests pass, build clean. Docker smoke test: runs in CI.
