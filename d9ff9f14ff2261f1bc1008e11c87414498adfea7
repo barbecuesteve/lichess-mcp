@@ -1,0 +1,16 @@
+PR DRAFT for chore/dependabot. Not opened yet: Steve is holding new upstream issues and PRs. Ask him before opening.
+Suggested: open after chore/npm-hygiene merges, so the first Dependabot run starts from current dependencies. No issue needed; it's an offer, like the CI PR (#16), so open it as a proposal issue + PR or a bare PR, whichever Steve prefers.
+
+=== PR ===
+Title: chore: add Dependabot with grouped monthly updates
+Body:
+An offer, like the CI PR: feel free to close it if you'd rather not get bot PRs.
+
+- Checks npm and GitHub Actions monthly.
+- Groups updates so there are at most two npm PRs a month (minor and patch together; majors together) and one Actions PR.
+- CI (#16) runs on each Dependabot PR, so a breaking update shows up as a red check. Actions minutes are free on public repos.
+- Security updates are separate; they can be turned on in Settings > Code security.
+
+Config only: .github/dependabot.yml.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
