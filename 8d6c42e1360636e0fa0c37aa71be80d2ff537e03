@@ -1,0 +1,34 @@
+PR DRAFT for feat/toolsets. Not opened yet: Steve is holding new upstream issues and PRs. Ask him before opening.
+Conflicts with PR #26 (npm-hygiene) on buildServer's first two lines in src/server.ts; rebase whichever merges second (keep both: createRequire version + tools parameter).
+Process: issue, then PR from barbecuesteve:feat/toolsets with "Closes #<issue>". Create first, fix numbers after.
+
+=== ISSUE ===
+Title: 188 tools is a lot of context for every session
+
+Glama's review of this server (https://glama.ai/mcp/servers/karayaman/lichess-mcp) says:
+
+> With 88 tools, the count is excessive for the Lichess domain, leading to potential overwhelm and inefficiency. While the server covers many features, the high number suggests over-fragmentation, such as having separate tools for each tournament type (arena, swiss, simul) and multiple export functions, which could be consolidated.
+
+The count is now 188. Their tools/list response is about 94,000 characters (very roughly 25-30k tokens), which the client sends to the model every session before the user asks anything. Most of it is for tournament organizers, bots and broadcasters.
+
+Merging tools, as the review suggests, would cost schema clarity and the per-tool destructiveHint (an arena/swiss/simul tool would mix reads and destructive writes).
+
+=== PR ===
+Title: feat: enable a core set of tools by default, the rest via LICHESS_TOOLSETS
+Body:
+Closes #<issue>
+
+- Tools are grouped by their existing source files into 22 toolsets.
+- `LICHESS_TOOLSETS` picks them: unset or `core` gives 70 tools (account, users, relations, messaging, games, opening explorer, tablebase, puzzles, TV, analysis, the interactive UIs), about 34,000 characters instead of 94,000. `all` restores everything; `core,arena,swiss` adds to core.
+- An unknown name stops the server at startup and lists the valid names.
+- `buildServer(ctx, tools?)` still registers every tool when called without a selection.
+- README: new Toolsets section; the Game Play and Tournaments examples note which toolsets they need.
+
+**Behavior change:** without `LICHESS_TOOLSETS`, challenges, board play, tournaments, teams, studies, broadcasts, bots, bulk pairings and external engines are off. If you'd rather keep everything on by default, change the default to `all` in selectTools; the README table would change to match.
+
+Prompted by Glama's review: https://glama.ai/mcp/servers/karayaman/lichess-mcp
+
+Commits: test first (10 of 11 new tests fail on main), then the feature.
+Verification: 406/406 tests pass; typecheck and build clean.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
