@@ -1,0 +1,23 @@
+PR DRAFT for docs/token-handling. Not opened yet: Steve is holding new upstream issues and PRs. Ask him before opening.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:docs/token-handling to main with "Closes #<issue>". Create both first, then fix cross-references by number.
+
+=== ISSUE ===
+Title: README recommends putting the Lichess token in the chat (set_token) and in plaintext config
+
+- The README's Configuration section offers `set_token` as an equal option. A token passed that way is stored in chat history and sent to the model provider.
+- The Claude Desktop examples put the token in plaintext in claude_desktop_config.json.
+- It says to put `.env` "in the project root", but dotenv reads `.env` from the server's working directory, which MCP clients usually set elsewhere.
+
+=== PR ===
+Title: docs: recommend passing the Lichess token from the OS secret store
+Body:
+Closes #<issue>
+
+- New "Lichess Token" section ranks the options, most secure first: OS secret store at launch (macOS Keychain, libsecret, a password manager CLI), the client's env block, a .env file, and last `set_token`.
+- Advises least-privilege token scopes, since some tools act on the account and the model reads other users' text.
+- Claude Desktop examples now read the token from the Keychain.
+- Removes the set_token example from "Account Management". The tool itself is unchanged.
+
+Docs only; no code changes.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
