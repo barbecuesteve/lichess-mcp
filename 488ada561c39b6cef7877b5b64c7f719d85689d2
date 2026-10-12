@@ -1,0 +1,25 @@
+PR DRAFT for chore/npm-hygiene. Not opened yet: Steve is holding new upstream issues and PRs. Ask him before opening.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:chore/npm-hygiene to main with "Closes #<issue>". Create both first, then fix cross-references by number.
+
+=== ISSUE ===
+Title: npm hygiene: audit findings, version in three places, full build on every install
+
+- `npm audit` reports 9 vulnerabilities (1 critical, 4 high), including the MCP SDK and its HTTP stack.
+- The version 0.2.0 is written in package.json, src/server.ts and src/ui/shared/app-bootstrap.ts, so a bump can miss one.
+- `prepare` runs the full build (typecheck, three Vite builds, tsc) on every `npm install`/`npm ci`. CI and the Dockerfile already pass --ignore-scripts to dodge it.
+
+=== PR ===
+Title: chore: npm audit fixes, a single source for the version, no build on install
+Body:
+Closes #<issue>
+
+- `npm audit fix`, plus vite 8.3 and vitest 5. Runtime dependencies: 0 vulnerabilities. One dev-only finding is left: braces (via vite-plugin-singlefile's micromatch) has no patched release; it runs at build time on our own files.
+- The server reads its version from package.json via createRequire; the UI imports it, and Vite inlines only the string.
+- `prepare` is removed. The README's manual install already has an explicit build step. Installing straight from git now needs `npm run build`.
+- vite.config.ts uses import.meta.dirname (Vite 8.3 warns about __dirname).
+- Coverage under vitest 5 reads 60% overall vs 79% under vitest 3, with no test removed: the v8 coverage remapping changed. Mention this so it isn't read as a regression.
+
+Commits: test first (fails on main: version hard-coded), then the fix, then the dependency and prepare chores.
+Verification: 397/397 tests pass, build clean. Docker smoke test: runs in CI.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
