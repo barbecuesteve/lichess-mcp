@@ -1,0 +1,24 @@
+PR DRAFT for fix/rate-limit-backoff. Not opened yet: Steve is holding new upstream issues and PRs. Ask him before opening.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/rate-limit-backoff to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers.
+
+=== ISSUE ===
+Title: Rate-limit retries are too fast, and POSTs are retried on 503 (possible duplicate writes)
+
+- On 429 the client retries after 2-4 s. Lichess asks clients to wait after a 429 (https://lichess.org/page/api-tips: "wait a full minute"), so quick retries can extend the throttle.
+- The client retries every method on 503. A 503 can come back for a write Lichess actually completed, so a retried POST (send_message, create_challenge, bulk pairings) could happen twice.
+- Where: src/http/client.ts, the retry loop in LichessClient.request.
+
+=== PR ===
+Title: fix: back off 10 s doubling on 429, and don't retry POSTs on 503
+Body:
+Closes #<issue>
+
+- 429: waits 10, 20, 40, 80 s (or a longer Retry-After), then gives up when the next wait would pass 3 minutes. Writes are still retried on 429, since Lichess didn't process them.
+- 503: retried only for idempotent methods (GET, HEAD, PUT, DELETE, OPTIONS).
+- Tests use fake timers, so they run instantly.
+
+Commits: test first (4 of the 7 new tests fail on main), then the fix.
+Verification: 400/400 tests pass; typecheck clean.
+Note for the PR body: some MCP clients time out tool calls before 3 minutes; then the client reports a timeout instead of the 429 error.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
