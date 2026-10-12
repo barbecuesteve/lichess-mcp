@@ -19,13 +19,13 @@ import { registerPrompts } from "./prompts/index.js";
 import { readUiHtml } from "./ui-loader.js";
 import { UI_META_KEY } from "./types/ui-props.js";
 
-export function buildServer(ctx: ToolContext): McpServer {
+export function buildServer(ctx: ToolContext, tools: AnyToolDefinition[] = allTools): McpServer {
   const mcp = new McpServer({ name: "lichess-mcp", version: "0.2.0" });
 
   // De-dupe resource registrations across multiple tools that share a UI.
   const registeredResources = new Set<string>();
 
-  for (const t of allTools) {
+  for (const t of tools) {
     if (t.ui) {
       const ui = t.ui;
       const uiMeta: { resourceUri?: string; visibility?: typeof ui.visibility } = {};
