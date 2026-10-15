@@ -1,0 +1,29 @@
+PR DRAFT for fix/tournament-update-required-fields. Not opened yet: Steve is holding new upstream issues and PRs until the maintainer responds to #10, #12, #14, #16, #19, #20.
+Process: open the issue on karayaman/lichess-mcp, then the PR from barbecuesteve:fix/tournament-update-required-fields to main with "Closes #<issue>". Create both first, then fix any cross-references by number. Don't guess numbers. Link the spec YAML.
+Confidence note: from the spec only, not verified live (editing needs a token and a tournament you own). Design choice: required fields, rather than fetch-and-merge, to avoid unit conversions (arena clockTime is in minutes; GET returns seconds).
+
+=== ISSUE ===
+Title: update_arena / update_swiss allow partial updates, but Lichess requires clock and duration fields on every edit
+
+Per the Lichess API spec (https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml):
+- `POST /api/tournament/{id}` requires `clockTime`, `clockIncrement` and `minutes`.
+- `POST /api/swiss/{id}/edit` requires `clock.limit`, `clock.increment` and `nbRounds`.
+
+`update_arena` makes all three optional. `update_swiss` makes `nbRounds` optional and can't send the clock at all. So a partial update, such as just renaming, sends a request the spec says is invalid.
+
+=== PR ===
+Title: fix: require the fields Lichess needs on arena and Swiss edits
+Body:
+Closes #<issue>
+
+- `update_arena`: `clockTime`, `clockIncrement` and `minutes` are required.
+- `update_swiss`: `clock { limit, increment }` and `nbRounds` are required; clock is sent as `clock.limit` / `clock.increment`, matching `create_swiss`.
+- The descriptions point the model to `get_arena_info` / `get_swiss_info` for the current values.
+
+Spec: https://github.com/lichess-org/api/blob/906d1a6e93ca1ba4b65c9decb3077f2431c6d55a/doc/specs/lichess-api.yaml
+
+Commits: tests first (3 fail), then the fix.
+Verification: 363/363 tests pass. Not exercised live.
+If #19 (contract test) has merged, remove the "Spec requires these fields on every edit" group from tests/contract/known-mismatches.ts.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
